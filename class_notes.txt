@@ -1,0 +1,253 @@
+https://lms.webasha.com
+https://docs.openshift.com/container-platform/4.14/installing/installing_bare_metal/installing-bare-metal-network-customizations.html
+RHCOS
+https://rol.redhat.com/rol/app
+oc login -u admin -p redhatocp https://api.ocp4.example.com:6443
+ssh lab@utility
+./wait.sh
+app.ziteboard.com --To draw
+################################################################################################################################################
+Declarative resource management:
+Imperative:
+kubectl create deployment db-pod --port 3306 --image registry.ocp4.example.com:8443/rhel8/mysql-80
+kubectl set env deployment/db-pod MYSQL_USER='user1' MYSQL_PASSWORD='mypa55w0rd' MYSQL_DATABASE='items'
+oc get pods
+oc delete podname
+oc delete deployment/db-pod ---> if its creating replica
+oc scale deployment/db-pod --replicas=0 ---> to stop replica
+
+Declarative:
+#Crate resource:
+kubectl create deployment hello-openshift -o yaml --image registry.ocp4.example.com:8443/redhattraining/hello-world-nginx:v1.0 --save-config \ 
+--dry-run=client > ~/my-app/example-deployment.yaml
+oc create -R -f ~/my-app/exammple-deployment.yaml
+To update resources: we can run dry run cmd to check what resource going to change/update/create 
+kubectl apply -f ~/my-app/example-deployment.yaml --dry-run=server --validate=true
+#Use --dry-run=client for quick checks and when working offline.
+#Use --dry-run=server for accurate validation against the cluster's current state.
+
+#use the oc rollout restart deployment deployment-name command to
+force a restart of the pods that are associated with the deployment. The forced restart generates
+pods that use the new values from the updated secret or configuration map.
+#patch deployment
+
+Guided exercise:
+lab start declarative-manifests
+oc login -u developer -p developer https://api.ocp4.example.com:6443
+Create namespace: oc new-project demo
+clone the repos:
+ git clone https://git.ocp4.example.com/developer/declarative-manifests.git
+git log --oneline
+git checkout v1.0
+oc apply -f . --validate=true --dry-run=server 
+oc apply -f .
+watch oc get deployment,pods
+oc get routes.route.openshift.io
+-------
+Deploy the second version:
+git checkout v1.1.0
+#Inspect the changes from the new manifests.
+oc diff -f .
+oc apply -f .
+watch oc get deployment,pods
+oc rollout restart deployment/database
+oc rollout restart deployment/exoplanets
+oc get pods
+git status
+oc status 
+oc get all ---> This will show all resources
+oc get deployment
+oc get rs
+oc get pod
+oc get svc
+oc get routes.route.openshift.io
+oc delete -f . ---->Delete the application resources.
+lab finish declarative-manifests
+------------------------------------
+
+oc scale deployment/<deployment-name> --replicas=0
+
+
+Again if we want to upgrade the application - make sure that you are in folder which is clone priviousaly
+git checkout v1.1.1
+oc diff -f .  ---To check difference before update the app.
+oc apply -f . -n cloud1 --If we want to change namespace
+
+If we want to downgrade if any facing issue
+git checkout to specific version and update.
+
+oc crreate deployment --name=demo --image=nginx
+
+kubentaes.io --deployment
+wget url
+oc apply -f nginx.yml 
+oc get pod
+oc logs podname
+
+deployment means it create pod , replica ,dependancy . security ,acl
+oc delete -f nginx.yml ---> it will delete all resouces
+route/security-- To configure app or expose over or within network
+oc delete all -all ___ delete all resources inside namespace
+#####################################################################################################
+ Kustomize Overlays:kustomizing kubernetes configuration
+ oc whoami --show-console
+ oc get nodes
+ oc debug node/master01
+ oc apply -f 
+ oc apply -k
+ #####################################################
+Deploy package application:
+Deployment is for kub to create replica
+Deployment config is used to create replica controller in openshift
+
+Helm  --opensource tool to manage of lifecycle of kuber cluster, openshift cluster resource 
+Helm chart: 
+oc delete all --all
+helm repo list or help search repo  ---> To check help repo
+helm create test123
+ls 
+cd test123
+ls
+tree test123
+helm repo list
+helm repo add helm-repo-1 http://helm.ocp4.openshift.com/charts
+helm repo list
+helm search repo helm-repo-1
+helm search repo helm-repo-1 --version ---> To check latest /down-graded version details
+helm show value helm-repo-1/etherpad --version 0.0.6
+so to use costomize configuration we need to use values.yml file
+vim values.yml
+image:
+     repository:url
+	 name:xyz
+	 tag:1.0.0
+	 
+route:
+host:development-etherpad.apps.example.com
+
+helm list
+helm repo list
+helm install app1 helm-repo-1/etherpad -f vaules.yml --version 0.0.6
+oc get all
+oc get pod ---check pod details
+oc logs pod-name
+oc describe pod pod-name
+helm uninstall app1
+helm install app1 helm-repo-1/etherpad -f vaules.yml --version 0.0.6
+vim vaules.yml --change tag to 1.18.8
+helm install app1 helm-repo-1/etherpad -f vaules.yml --version 0.0.6
+oc get pod
+oc get pod -w
+oc get routes.route.openshift.io
+helm list
+helm search repo --versions
+To upgarde 0.0.6 to 0.0.7
+helm upgrade app1 helm-repo-1/etherpad -f vaules.yml --version 0.0.7
+oc get pod
+helm list
+we can add replicacount: 4 in values.yml , To upgrade pods and re run cmd
+helm upgrade app1 helm-repo-1/etherpad -f vaules.yml
+oc get pod
+oc get rs
+############################################################################################
+Authentication and autherization:
+Identity--it will create when only succesfull login user information 
+Group: numbers of users.
+service account: To access many application.we can not login via UI/console via service account
+Roles: Permission. specific permission
+Type of auth:
+LDAP, Htpasswd, Github,openID connect ,keystone
+
+Administartion>cluster setting> configuration>search for operator like auth> identity provider-add
+oc whoami -sshow-console
+exam-htpasswd
+oc get oauth cluster -o yaml
+In exam:
+sudo yum install httpd-tools
+htpasswd -c -B -b passwordfile sara redhat  ----_ -c option create file, if you have to add many users after dont use -c
+oauth --> always use openshift-config (namespace)
+create secret:
+oc create secret generic new-secret --from-file=htpasswd=passwordfile -n openshift-config 
+oc describe secret new-secret -n openshift-config
+oc get oauth cluster -o yaml >> auth.yml
+vim auth.yml
+identityProviders
+-htpasswd:
+filedata:
+name: new-secret
+mappingMethod: claim
+name: demo idp
+type: HTPasswd
+
+oc replace -f auth.yml
+oc get pod -n openshift-authentication
+watch -n1 oc get pod -n openshift-authentication
+oc get  oauth cluster -o yaml
+oc get secrets -b openshift-config
+oc login -u sara -p redhat
+oc get users
+oct get nodes
+oc login -u admin -p 
+oc get identities.user.openshift.io
+if you want to create user
+To create new users we need to extract the secret and update it.and encode again. openshift.config is namespace
+
+oc extract secret/new-secret -n openshift-config -to /home/student/ --confirm
+now we have extarcted htpasswd file
+htpasswd -B -b password harry redhat 
+cat passwd
+now update secret
+oc set data secret/new-secret --from-file=htpasswd=password -n openshift-config 
+oc login -u harry -p redhat
+oc get pod -n openshift-authentication 
+watch -n1 oc get pod -n openshift-authentication
+oc login -u harry -p redhat
+oc logout
+oc get users
+also we can get identities of that users
+oc get identities.user.openshift.io
+Guided exercise:configure identity user page no 101
+#######################################################################################
+RBAC-Role-based Access Control 
+
+
+
+
+ 
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
