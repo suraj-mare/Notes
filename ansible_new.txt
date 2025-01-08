@@ -1,0 +1,73 @@
+ansible -m ping all --PVSH -Prallel dancing shell
+SSH->>DSH-dancing-->PDSSH-Parellel
+Puppet-- windows only , Ruby(.rb)
+chef-->Agentbase , Is only sutaible for linux
+Ansible ---Agentless, works only ssh ,YAML ,All types of OS,  --->uses servers ,n/w devices, server, desktop,IOT, 
+Configuraion managemnet tool- Ansibel ,Puppet,chef
+
+ad-hoc :
+$ ansible  -m ns.modulename Param groupname
+Playbook:- Yaml/yml
+---
+- hosts: Groupname
+  tasks: 
+  - name: string message
+    become=true
+	apt:
+	    update-cache=yes
+		
+  
+
+
+
+cat <<EOF > pb-jdk8.yml   ( >> append)
+
+ansible-playbook pb-jdk8.yml
+draw.io
+
+
+===========================================
+Ansible role: To split playbook into small role
+
+Ansible galaxy : repos
+control server,manage server
+https://galaxy.ansible.com
+sudo hostname ms
+bash
+copy pem and configure config file
+Host cs
+HostName 3.80.179.41
+User ubuntu
+IdentityFile /home/ubuntu/.ssh/mujahed.pem
+
+Host ms
+		HostName 3.110.167.30
+		User ubuntu
+		IdentityFile /home/ubuntu/.ssh/mujahed.pem
+		
+chmod 400 .pem
+
+install ansible
+https://docs.ansible.com/ansible/latest/installation_guide/installation_distros.html#installing-ansible-on-ubuntu
+add entry in host file
+ansible all -m ping
+ansible ws -m ping
+cd /etc/ansible/roles/
+ansible-galaxy init nginx
+vim task/main.yml
+add cmd to install nginx
+
+now 
+vim xyz.yml
+---
+	-
+	hosts:ws
+	become:yes
+	roles:
+	-nginx
+	
+
+ansible-playbook install xyz.yml
+
+
+
